@@ -3214,3 +3214,41 @@ extension NextLevel {
     }
     
 }
+extension NextLevel {
+    open func isUltraWideLensAvailable(forPosition position: AVCaptureDevice.Position)->Bool {
+        if #available(iOS 13.0, *) {
+            let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [AVCaptureDevice.DeviceType.builtInUltraWideCamera], mediaType: AVMediaType.video, position: position)
+            return discoverySession.devices.count > 0
+        }
+        else{
+            return false
+        }
+    }
+    open func isTripleCameraAvailable(forPosition position: AVCaptureDevice.Position)->Bool {
+        if #available(iOS 13.0, *) {
+            let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [AVCaptureDevice.DeviceType.builtInTripleCamera], mediaType: AVMediaType.video, position: position)
+            return discoverySession.devices.count > 0
+        }
+        else{
+            return false
+        }
+    }
+    open func currentDeviceType() -> AVCaptureDevice.DeviceType?{
+        if let device = _currentDevice {
+            return device.deviceType
+        }
+        return nil
+    }
+    open func changeCaptureDeviceIfAvailable(captureDevice: AVCaptureDevice.DeviceType) throws {
+        let deviceForUse = AVCaptureDevice.captureDevice(withType: captureDevice, forPosition: .back)
+        if deviceForUse == nil {
+            throw NextLevelError.deviceNotAvailable
+        } else {
+            self.executeClosureAsyncOnSessionQueueIfNecessary {
+                self._requestedDevice = deviceForUse
+                self.configureSessionDevices()
+                self.updateVideoOrientation()
+            }
+        }
+    }
+}
