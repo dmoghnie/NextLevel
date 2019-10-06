@@ -233,6 +233,8 @@ public class NextLevel: NSObject {
     public weak var portraitEffectsMatteDelegate: NextLevelPortraitEffectsMatteDelegate?
     public weak var metadataObjectsDelegate: NextLevelMetadataOutputObjectsDelegate?
 
+    public var ignoreDeviceOrientation: Bool = true
+    
     // preview
     
     /// Live camera preview, add as a sublayer to the UIView's primary layer.
@@ -1293,7 +1295,9 @@ extension NextLevel {
                 session.reset()
             }
         }
-        
+        if (ignoreDeviceOrientation){
+            return
+        }
         var didChangeOrientation = false
         let currentOrientation = AVCaptureVideoOrientation.avorientationFromUIDeviceOrientation(UIDevice.current.orientation)
         
@@ -3027,7 +3031,7 @@ extension NextLevel {
     }
     
     @objc internal func deviceOrientationDidChange(_ notification: NSNotification) {
-        if self.automaticallyUpdatesDeviceOrientation {
+        if self.automaticallyUpdatesDeviceOrientation && !ignoreDeviceOrientation{
             self._sessionQueue.sync {
                 self.updateVideoOrientation()
             }
